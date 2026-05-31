@@ -3,11 +3,18 @@ const mongoose   = require('mongoose');
 const bcrypt     = require('bcryptjs');
 const jwt        = require('jsonwebtoken');
 const cors       = require('cors');
+const path       = require('path');
 require('dotenv').config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+// ✅ HTML files serve karo
+app.use(express.static(path.join(__dirname)));
+app.get('/', function(req, res) {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
 
 // ========== MONGODB CONNECT ==========
 mongoose.connect('mongodb+srv://rajkumar2003sin_db_user:iUa3EmI1q6yaTyCS@cluster0.vkdmkut.mongodb.net/gamezone?appName=Cluster0')
@@ -33,17 +40,11 @@ const User = mongoose.model('User', UserSchema);
 app.post('/api/register', async (req, res) => {
   try {
     const { name, email, phone, password, device, browser } = req.body;
-
-    // Check existing user
     const existing = await User.findOne({ email });
     if (existing) return res.json({ success: false, message: 'Email already registered!' });
-
-    // Hash password
     const hashed = await bcrypt.hash(password, 10);
-
     const user = new User({ name, email, phone, password: hashed, device, browser });
     await user.save();
-
     res.json({ success: true, message: 'Account created!', user: { name, email } });
   } catch (err) {
     res.json({ success: false, message: 'Server error!' });
@@ -54,19 +55,14 @@ app.post('/api/register', async (req, res) => {
 app.post('/api/login', async (req, res) => {
   try {
     const { email, password, device, browser } = req.body;
-
     const user = await User.findOne({ email });
     if (!user) return res.json({ success: false, message: 'Email not found!' });
-
     const match = await bcrypt.compare(password, user.password);
     if (!match) return res.json({ success: false, message: 'Wrong password!' });
-
-    // Update last login
     user.lastLogin = new Date();
     user.device    = device || user.device;
     user.browser   = browser || user.browser;
     await user.save();
-
     res.json({ success: true, message: 'Login successful!', user: {
       name: user.name, email: user.email, highScore: user.highScore,
       gamesPlayed: user.gamesPlayed, createdAt: user.createdAt
@@ -82,18 +78,16 @@ app.post('/api/score', async (req, res) => {
     const { email, score } = req.body;
     const user = await User.findOne({ email });
     if (!user) return res.json({ success: false });
-
     user.gamesPlayed += 1;
     if (score > user.highScore) user.highScore = score;
     await user.save();
-
     res.json({ success: true, highScore: user.highScore, gamesPlayed: user.gamesPlayed });
   } catch (err) {
     res.json({ success: false });
   }
 });
 
-// ========== ALL USERS (Admin) ==========
+// ========== ALL USERS ==========
 app.get('/api/users', async (req, res) => {
   try {
     const users = await User.find({}, '-password');
@@ -104,6 +98,7 @@ app.get('/api/users', async (req, res) => {
 });
 
 // ========== START SERVER ==========
-app.listen(3000, () => {
-  console.log('🚀 Server running on http://localhost:3000');
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log('🚀 Server running on port ' + PORT);
 });

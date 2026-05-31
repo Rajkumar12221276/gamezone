@@ -35,6 +35,8 @@ function getDeviceInfo() {
   return { device, browser };
 }
 
+var SERVER = 'https://gamezone-production-7ba2.up.railway.app';
+
 // ---------- LOGIN ----------
 async function handleLogin() {
   var email    = document.getElementById('loginEmail').value.trim();
@@ -57,7 +59,7 @@ async function handleLogin() {
 
   try {
     var info = getDeviceInfo();
-    var response = await fetch('http://localhost:3000/api/login', {
+    var response = await fetch(SERVER + '/api/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password, device: info.device, browser: info.browser })
@@ -115,7 +117,7 @@ async function handleRegister() {
 
   try {
     var info = getDeviceInfo();
-    var response = await fetch('http://localhost:3000/api/register', {
+    var response = await fetch(SERVER + '/api/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, email, phone, password, device: info.device, browser: info.browser })
