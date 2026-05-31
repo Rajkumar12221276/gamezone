@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>GameZone - Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --red: #e94560;
+      --red-dark: #c73652;
+      --bg1: #0d0d1a;
+      --bg2: #12122a;
+      --bg3: #1a1a3e;
+      --glass: rgba(255,255,255,0.05);
+      --glass-border: rgba(255,255,255,0.08);
+      --text: #fff;
+      --muted: #8888aa;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Rajdhani', sans-serif;
+      background: var(--bg1);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* BG EFFECT */
+    body::before {
+      content: '';
+      position: fixed;
+      top: -50%; left: -50%;
+      width: 200%; height: 200%;
+      background: radial-gradient(ellipse at 20% 20%, rgba(233,69,96,0.08) 0%, transparent 50%),
+                  radial-gradient(ellipse at 80% 80%, rgba(100,100,255,0.06) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* NAVBAR */
+    .navbar {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 14px 28px;
+      background: rgba(13,13,26,0.9);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--glass-border);
+    }
+    .logo {
+      font-family: 'Orbitron', monospace;
+      font-size: 20px; font-weight: 900;
+      color: var(--red);
+      letter-spacing: 2px;
+    }
+    .logo span { color: #fff; }
+    .nav-right { display: flex; align-items: center; gap: 14px; }
+    .avatar {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--red), #ff6b8a);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Orbitron', monospace;
+      font-weight: 700; font-size: 16px;
+    }
+    .nav-name { font-size: 15px; font-weight: 600; color: #ccc; }
+    .logout-btn {
+      padding: 7px 16px;
+      background: transparent;
+      border: 1px solid var(--red);
+      color: var(--red);
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 14px; font-weight: 600;
+      transition: all 0.3s;
+    }
+    .logout-btn:hover { background: var(--red); color: #fff; }
+
+    /* MAIN */
+    .main { padding: 28px; position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; }
+
+    /* WELCOME */
+    .welcome {
+      background: linear-gradient(135deg, rgba(233,69,96,0.15), rgba(100,100,255,0.08));
+      border: 1px solid rgba(233,69,96,0.25);
+      border-radius: 16px;
+      padding: 24px 28px;
+      margin-bottom: 24px;
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 12px;
+    }
+    .welcome h2 {
+      font-family: 'Orbitron', monospace;
+      font-size: 22px; font-weight: 700;
+    }
+    .welcome h2 span { color: var(--red); }
+    .welcome p { color: var(--muted); font-size: 14px; margin-top: 4px; }
+    .welcome-badge {
+      padding: 8px 18px;
+      background: rgba(233,69,96,0.15);
+      border: 1px solid rgba(233,69,96,0.3);
+      border-radius: 20px;
+      font-size: 13px; color: var(--red); font-weight: 600;
+    }
+
+    /* STATS */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 14px; margin-bottom: 28px;
+    }
+    .stat-card {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: 14px;
+      padding: 18px 16px;
+      text-align: center;
+      transition: transform 0.3s, border-color 0.3s;
+      cursor: default;
+    }
+    .stat-card:hover { transform: translateY(-4px); border-color: rgba(233,69,96,0.4); }
+    .stat-card .icon { font-size: 30px; margin-bottom: 8px; }
+    .stat-card .val {
+      font-family: 'Orbitron', monospace;
+      font-size: 26px; font-weight: 700; color: var(--red);
+    }
+    .stat-card .lbl { font-size: 12px; color: var(--muted); margin-top: 4px; letter-spacing: 1px; text-transform: uppercase; }
+
+    /* SECTION TITLE */
+    .section-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 14px; font-weight: 700;
+      color: var(--muted);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .section-title::after {
+      content: '';
+      flex: 1; height: 1px;
+      background: var(--glass-border);
+    }
+
+    /* GAME CARDS */
+    .games-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px; margin-bottom: 28px;
+    }
+    .game-card {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      padding: 22px 18px;
+      text-align: center;
+      transition: all 0.3s;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+    .game-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0;
+      width: 100%; height: 3px;
+      background: var(--card-color, var(--red));
+      transform: scaleX(0);
+      transition: transform 0.3s;
+    }
+    .game-card:hover::before { transform: scaleX(1); }
+    .game-card:hover {
+      transform: translateY(-6px);
+      border-color: var(--card-color, rgba(233,69,96,0.4));
+      background: rgba(255,255,255,0.08);
+    }
+    .game-card .game-icon { font-size: 42px; margin-bottom: 12px; }
+    .game-card .game-name {
+      font-family: 'Orbitron', monospace;
+      font-size: 13px; font-weight: 700;
+      margin-bottom: 6px; letter-spacing: 1px;
+    }
+    .game-card .game-desc { font-size: 12px; color: var(--muted); margin-bottom: 14px; line-height: 1.4; }
+    .game-card .game-score { font-size: 12px; color: var(--muted); margin-bottom: 14px; }
+    .game-card .game-score span { color: var(--red); font-weight: 700; font-family: 'Orbitron', monospace; }
+    .play-btn {
+      display: inline-block;
+      padding: 8px 20px;
+      background: var(--card-color, var(--red));
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 14px; font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.3s;
+      letter-spacing: 1px;
+    }
+    .play-btn:hover { opacity: 0.85; }
+
+    /* ANALYTICS */
+    .analytics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+    }
+    .info-card {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: 14px;
+      padding: 20px;
+    }
+    .info-card h4 {
+      font-family: 'Orbitron', monospace;
+      font-size: 11px; color: var(--muted);
+      letter-spacing: 2px; text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+    .info-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .info-row .key { font-size: 13px; color: var(--muted); }
+    .info-row .val { font-size: 13px; font-weight: 600; color: #fff; }
+    .device-badge {
+      display: inline-block;
+      padding: 3px 10px; border-radius: 20px;
+      font-size: 11px; font-weight: 700;
+    }
+    .device-badge.mobile { background: rgba(0,200,150,0.15); color: #00e5b0; border: 1px solid rgba(0,200,150,0.3); }
+    .device-badge.desktop { background: rgba(100,150,255,0.15); color: #7eb3ff; border: 1px solid rgba(100,150,255,0.3); }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <div class="navbar">
+    <div class="logo">GAME<span>ZONE</span></div>
+    <div class="nav-right">
+      <div class="avatar" id="avatarLetter">?</div>
+      <span class="nav-name" id="navName">Loading...</span>
+      <button class="logout-btn" onclick="logout()">LOGOUT</button>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <!-- WELCOME -->
+    <div class="welcome">
+      <div>
+        <h2>WELCOME BACK, <span id="welcomeName">PLAYER</span>!</h2>
+        <p id="lastLoginText">Last login: -</p>
+      </div>
+      <div class="welcome-badge">🎮 ACTIVE PLAYER</div>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="icon">🏆</div>
+        <div class="val" id="highScoreVal">0</div>
+        <div class="lbl">High Score</div>
+      </div>
+      <div class="stat-card">
+        <div class="icon">🎯</div>
+        <div class="val" id="lastScoreVal">0</div>
+        <div class="lbl">Last Score</div>
+      </div>
+      <div class="stat-card">
+        <div class="icon">🕹️</div>
+        <div class="val" id="gamesVal">0</div>
+        <div class="lbl">Games Played</div>
+      </div>
+      <div class="stat-card">
+        <div class="icon">📅</div>
+        <div class="val" id="memberVal">-</div>
+        <div class="lbl">Member Since</div>
+      </div>
+    </div>
+
+    <!-- GAMES -->
+    <div class="section-title">🎮 GAMES</div>
+    <div class="games-grid">
+
+      <div class="game-card" style="--card-color: #00e676;">
+        <div class="game-icon">🐍</div>
+        <div class="game-name">SNAKE</div>
+        <div class="game-desc">Classic snake — khao, bado, survive karo!</div>
+        <div class="game-score">Best: <span id="snakeBest">0</span></div>
+        <button class="play-btn" style="background:#00e676;color:#000;" onclick="window.location.href='game.html'">▶ PLAY</button>
+      </div>
+
+      <div class="game-card" style="--card-color: #ff9800;">
+        <div class="game-icon">❓</div>
+        <div class="game-name">QUIZ</div>
+        <div class="game-desc">Test your knowledge — 10 questions!</div>
+        <div class="game-score">Best: <span id="quizBest">0</span></div>
+        <button class="play-btn" style="background:#ff9800;" onclick="window.location.href='quiz.html'">▶ PLAY</button>
+      </div>
+
+      <div class="game-card" style="--card-color: #e91e63;">
+        <div class="game-icon">🧩</div>
+        <div class="game-name">MEMORY</div>
+        <div class="game-desc">Cards flip karo — pairs dhundho!</div>
+        <div class="game-score">Best: <span id="memoryBest">0</span></div>
+        <button class="play-btn" style="background:#e91e63;" onclick="window.location.href='memory.html'">▶ PLAY</button>
+      </div>
+
+      <div class="game-card" style="--card-color: #00bcd4;">
+        <div class="game-icon">🎯</div>
+        <div class="game-name">AIM TRAINER</div>
+        <div class="game-desc">Targets pe click karo — reflexes test!</div>
+        <div class="game-score">Best: <span id="aimBest">0</span></div>
+        <button class="play-btn" style="background:#00bcd4;" onclick="window.location.href='aim.html'">▶ PLAY</button>
+      </div>
+
+      <div class="game-card" style="--card-color: #9c27b0;">
+        <div class="game-icon">🔢</div>
+        <div class="game-name">2048</div>
+        <div class="game-desc">Tiles merge karo — 2048 tak pahuncho!</div>
+        <div class="game-score">Best: <span id="g2048Best">0</span></div>
+        <button class="play-btn" style="background:#9c27b0;" onclick="window.location.href='g2048.html'">▶ PLAY</button>
+      </div>
+
+    </div>
+
+    <!-- ANALYTICS -->
+    <div class="section-title">📊 YOUR STATS</div>
+    <div class="analytics-grid">
+
+      <div class="info-card">
+        <h4>👤 Profile</h4>
+        <div class="info-row"><span class="key">Name</span><span class="val" id="pName">-</span></div>
+        <div class="info-row"><span class="key">Email</span><span class="val" id="pEmail">-</span></div>
+        <div class="info-row"><span class="key">Phone</span><span class="val" id="pPhone">-</span></div>
+      </div>
+
+      <div class="info-card">
+        <h4>📱 Device</h4>
+        <div class="info-row"><span class="key">Device</span><span class="val" id="dDevice">-</span></div>
+        <div class="info-row"><span class="key">Browser</span><span class="val" id="dBrowser">-</span></div>
+        <div class="info-row"><span class="key">Screen</span><span class="val" id="dScreen">-</span></div>
+        <div style="margin-top:8px;" id="dBadge"></div>
+      </div>
+
+      <div class="info-card">
+        <h4>🌐 Session</h4>
+        <div class="info-row"><span class="key">Joined</span><span class="val" id="sJoined">-</span></div>
+        <div class="info-row"><span class="key">Platform</span><span class="val" id="sPlatform">-</span></div>
+        <div class="info-row"><span class="key">Language</span><span class="val" id="sLang">-</span></div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    if (localStorage.getItem('isLoggedIn') !== 'true') {
+      window.location.href = 'index.html';
+    }
+
+    var name       = localStorage.getItem('userName') || 'Player';
+    var email      = localStorage.getItem('userEmail') || '-';
+    var phone      = localStorage.getItem('userPhone') || '-';
+    var regTime    = localStorage.getItem('registerTime') || '-';
+    var highScore  = localStorage.getItem('highScore') || '0';
+    var lastScore  = localStorage.getItem('lastScore') || '0';
+    var gamesPlayed = localStorage.getItem('gamesPlayed') || '0';
+
+    var now = new Date().toLocaleString();
+    localStorage.setItem('lastLogin', now);
+
+    document.getElementById('avatarLetter').innerText  = name.charAt(0).toUpperCase();
+    document.getElementById('navName').innerText       = name;
+    document.getElementById('welcomeName').innerText   = name.toUpperCase();
+    document.getElementById('lastLoginText').innerText = 'Last login: ' + now;
+    document.getElementById('highScoreVal').innerText  = highScore;
+    document.getElementById('lastScoreVal').innerText  = lastScore;
+    document.getElementById('gamesVal').innerText      = gamesPlayed;
+    document.getElementById('memberVal').innerText     = regTime ? regTime.split(',')[0] : '-';
+
+    document.getElementById('snakeBest').innerText   = localStorage.getItem('snakeBest') || '0';
+    document.getElementById('quizBest').innerText    = localStorage.getItem('quizBest') || '0';
+    document.getElementById('memoryBest').innerText  = localStorage.getItem('memoryBest') || '0';
+    document.getElementById('aimBest').innerText     = localStorage.getItem('aimBest') || '0';
+    document.getElementById('g2048Best').innerText   = localStorage.getItem('g2048Best') || '0';
+
+    document.getElementById('pName').innerText   = name;
+    document.getElementById('pEmail').innerText  = email;
+    document.getElementById('pPhone').innerText  = phone;
+    document.getElementById('sJoined').innerText = regTime;
+    document.getElementById('sPlatform').innerText = navigator.platform || '-';
+    document.getElementById('sLang').innerText   = navigator.language || '-';
+
+    var ua = navigator.userAgent;
+    var isMobile = /Android|iPhone|iPad/i.test(ua);
+    var browser = 'Unknown';
+    if (ua.indexOf('Chrome') > -1) browser = 'Chrome';
+    else if (ua.indexOf('Firefox') > -1) browser = 'Firefox';
+    else if (ua.indexOf('Safari') > -1) browser = 'Safari';
+    else if (ua.indexOf('Edge') > -1) browser = 'Edge';
+
+    document.getElementById('dDevice').innerText  = isMobile ? '📱 Mobile' : '💻 Desktop';
+    document.getElementById('dBrowser').innerText = browser;
+    document.getElementById('dScreen').innerText  = window.screen.width + 'x' + window.screen.height;
+    document.getElementById('dBadge').innerHTML   = isMobile
+      ? '<span class="device-badge mobile">Mobile User</span>'
+      : '<span class="device-badge desktop">Desktop User</span>';
+
+    function logout() {
+      localStorage.setItem('isLoggedIn', 'false');
+      window.location.href = 'index.html';
+    }
+  </script>
+
+</body>
+</html>

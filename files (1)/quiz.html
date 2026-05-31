@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Quiz Game</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'Rajdhani',sans-serif;background:linear-gradient(135deg,#0d0d1a,#12122a,#1a1a3e);min-height:100vh;color:#fff;display:flex;flex-direction:column;align-items:center;}
+    .navbar{width:100%;display:flex;justify-content:space-between;align-items:center;padding:14px 24px;background:rgba(13,13,26,0.9);border-bottom:1px solid rgba(255,255,255,0.08);}
+    .logo{font-family:'Orbitron',monospace;font-size:18px;font-weight:900;color:#ff9800;}
+    .back-btn{padding:7px 16px;background:transparent;border:1px solid #ff9800;color:#ff9800;border-radius:6px;cursor:pointer;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:600;transition:all 0.3s;}
+    .back-btn:hover{background:#ff9800;color:#000;}
+    .game-wrap{width:100%;max-width:600px;padding:28px 20px;}
+    .score-bar{display:flex;gap:20px;justify-content:center;margin-bottom:24px;}
+    .score-item{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:12px 24px;text-align:center;}
+    .score-item .val{font-family:'Orbitron',monospace;font-size:22px;font-weight:700;color:#ff9800;}
+    .score-item .lbl{font-size:11px;color:#888;text-transform:uppercase;letter-spacing:1px;}
+    .progress-bar{width:100%;height:6px;background:rgba(255,255,255,0.1);border-radius:3px;margin-bottom:24px;overflow:hidden;}
+    .progress-fill{height:100%;background:#ff9800;border-radius:3px;transition:width 0.5s;}
+    .question-card{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:28px;margin-bottom:20px;}
+    .q-num{font-size:12px;color:#888;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;}
+    .q-text{font-size:20px;font-weight:600;line-height:1.4;}
+    .options{display:flex;flex-direction:column;gap:10px;}
+    .option-btn{padding:14px 18px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:10px;color:#fff;font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:600;text-align:left;cursor:pointer;transition:all 0.2s;}
+    .option-btn:hover:not(:disabled){background:rgba(255,152,0,0.15);border-color:#ff9800;}
+    .option-btn.correct{background:rgba(0,230,118,0.2)!important;border-color:#00e676!important;color:#00e676;}
+    .option-btn.wrong{background:rgba(233,69,96,0.2)!important;border-color:#e94560!important;color:#e94560;}
+    .option-btn:disabled{cursor:default;}
+    .feedback{text-align:center;font-size:16px;font-weight:600;min-height:24px;margin-top:12px;}
+    .start-btn{width:100%;padding:14px;background:#ff9800;color:#000;border:none;border-radius:10px;font-family:'Orbitron',monospace;font-size:16px;font-weight:700;cursor:pointer;transition:opacity 0.3s;letter-spacing:1px;}
+    .start-btn:hover{opacity:0.85;}
+    .overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);display:none;align-items:center;justify-content:center;z-index:999;}
+    .overlay.show{display:flex;}
+    .overlay-box{background:#12122a;border:2px solid #ff9800;border-radius:20px;padding:40px;text-align:center;min-width:280px;}
+    .overlay-box h2{font-family:'Orbitron',monospace;font-size:24px;margin-bottom:10px;color:#ff9800;}
+    .overlay-box .big{font-family:'Orbitron',monospace;font-size:48px;font-weight:900;color:#ff9800;margin:16px 0;}
+    .overlay-box p{color:#888;margin-bottom:20px;}
+    .btn-row{display:flex;gap:12px;justify-content:center;}
+    .btn-o{padding:12px 28px;background:#ff9800;color:#000;border:none;border-radius:8px;font-family:'Orbitron',monospace;font-size:14px;font-weight:700;cursor:pointer;}
+    .btn-s{padding:12px 20px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;border-radius:8px;font-family:'Rajdhani',sans-serif;font-size:14px;cursor:pointer;}
+  </style>
+</head>
+<body>
+  <div class="navbar">
+    <div class="logo">❓ QUIZ</div>
+    <button class="back-btn" onclick="window.location.href='dashboard.html'">⬅ Dashboard</button>
+  </div>
+  <div class="game-wrap">
+    <div class="score-bar">
+      <div class="score-item"><div class="val" id="scoreVal">0</div><div class="lbl">Score</div></div>
+      <div class="score-item"><div class="val" id="bestVal">0</div><div class="lbl">Best</div></div>
+      <div class="score-item"><div class="val" id="qNum">0/10</div><div class="lbl">Question</div></div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    <div class="question-card" id="questionCard">
+      <div class="q-num">GET READY</div>
+      <div class="q-text">Quiz Game mein aapka swagat hai! 10 questions honge. Har sahi answer pe 10 points milenge!</div>
+    </div>
+    <div class="options" id="optionsDiv"></div>
+    <div class="feedback" id="feedback"></div>
+    <button class="start-btn" id="startBtn" onclick="startGame()" style="margin-top:16px;">▶ START QUIZ</button>
+  </div>
+
+  <div class="overlay" id="overlay">
+    <div class="overlay-box">
+      <h2>QUIZ OVER!</h2>
+      <div class="big" id="finalScore">0</div>
+      <p id="finalMsg">-</p>
+      <div class="btn-row">
+        <button class="btn-o" onclick="restartGame()">🔄 Again</button>
+        <button class="btn-s" onclick="window.location.href='dashboard.html'">🏠 Dashboard</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    if(localStorage.getItem('isLoggedIn')!=='true') window.location.href='index.html';
+    var best = parseInt(localStorage.getItem('quizBest'))||0;
+    document.getElementById('bestVal').innerText = best;
+
+    var questions = [
+      {q:"Bharat ki rajdhani kya hai?",opts:["Mumbai","Delhi","Kolkata","Chennai"],ans:1},
+      {q:"1+1 kitna hota hai?",opts:["1","2","3","4"],ans:1},
+      {q:"HTML ka full form kya hai?",opts:["Hyper Text Markup Language","High Tech Modern Language","Hyper Transfer Markup Logic","None"],ans:0},
+      {q:"JavaScript kahan use hoti hai?",opts:["Database","Server only","Web browser","Hardware"],ans:2},
+      {q:"CPU ka full form kya hai?",opts:["Central Processing Unit","Computer Processing Unit","Central Program Unit","Core Processing Unit"],ans:0},
+      {q:"Google ka headquarter kahan hai?",opts:["New York","London","California","Texas"],ans:2},
+      {q:"Android kiska OS hai?",opts:["Apple","Microsoft","Google","Samsung"],ans:2},
+      {q:"WWW ka full form kya hai?",opts:["World Wide Web","World Web Work","Wide World Web","Web World Wide"],ans:0},
+      {q:"Python kya hai?",opts:["Snake","Programming Language","Game","Database"],ans:1},
+      {q:"RAM ka full form kya hai?",opts:["Read Access Memory","Random Access Memory","Run All Memory","Read All Memory"],ans:1},
+    ];
+
+    var current=0, score=0, running=false;
+
+    function startGame(){
+      current=0; score=0; running=true;
+      document.getElementById('startBtn').style.display='none';
+      showQuestion();
+    }
+
+    function showQuestion(){
+      if(current>=questions.length){ endGame(); return; }
+      var q = questions[current];
+      document.getElementById('qNum').innerText = (current+1)+'/10';
+      document.getElementById('progressFill').style.width = (current/10*100)+'%';
+      document.getElementById('questionCard').innerHTML = '<div class="q-num">QUESTION '+(current+1)+'</div><div class="q-text">'+q.q+'</div>';
+      document.getElementById('feedback').innerText='';
+      var html='';
+      q.opts.forEach(function(o,i){
+        html+='<button class="option-btn" onclick="answer('+i+')">'+o+'</button>';
+      });
+      document.getElementById('optionsDiv').innerHTML=html;
+    }
+
+    function answer(idx){
+      var q=questions[current];
+      var btns=document.querySelectorAll('.option-btn');
+      btns.forEach(function(b){b.disabled=true;});
+      if(idx===q.ans){
+        btns[idx].classList.add('correct');
+        score+=10;
+        document.getElementById('feedback').innerHTML='<span style="color:#00e676">✅ Sahi jawab!</span>';
+      } else {
+        btns[idx].classList.add('wrong');
+        btns[q.ans].classList.add('correct');
+        document.getElementById('feedback').innerHTML='<span style="color:#e94560">❌ Galat! Sahi tha: '+q.opts[q.ans]+'</span>';
+      }
+      document.getElementById('scoreVal').innerText=score;
+      setTimeout(function(){ current++; showQuestion(); },1200);
+    }
+
+    function endGame(){
+      if(score>best){ best=score; localStorage.setItem('quizBest',best); }
+      var played=parseInt(localStorage.getItem('gamesPlayed'))||0;
+      localStorage.setItem('gamesPlayed',played+1);
+      document.getElementById('finalScore').innerText=score;
+      document.getElementById('finalMsg').innerText = score>=80 ? '🏆 Zabardast! Expert ho tum!' : score>=50 ? '👍 Accha kiya!' : 'Aur practice karo!';
+      document.getElementById('overlay').classList.add('show');
+    }
+
+    function restartGame(){
+      document.getElementById('overlay').classList.remove('show');
+      document.getElementById('startBtn').style.display='block';
+      document.getElementById('optionsDiv').innerHTML='';
+      document.getElementById('feedback').innerText='';
+      document.getElementById('scoreVal').innerText='0';
+      document.getElementById('qNum').innerText='0/10';
+      document.getElementById('progressFill').style.width='0%';
+      document.getElementById('bestVal').innerText=best;
+      document.getElementById('questionCard').innerHTML='<div class="q-num">GET READY</div><div class="q-text">Quiz Game mein aapka swagat hai! 10 questions honge.</div>';
+      running=false;
+    }
+  </script>
+</body>
+</html>

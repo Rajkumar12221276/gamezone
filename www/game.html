@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Snake Game</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Rajdhani', sans-serif;
+      background: linear-gradient(135deg, #0d0d1a, #12122a, #1a1a3e);
+      min-height: 100vh;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .navbar {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 24px;
+      background: rgba(13,13,26,0.9);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .logo { font-family: 'Orbitron', monospace; font-size: 18px; font-weight: 900; color: #00e676; }
+    .back-btn {
+      padding: 7px 16px;
+      background: transparent;
+      border: 1px solid #00e676;
+      color: #00e676;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 14px; font-weight: 600;
+      transition: all 0.3s;
+    }
+    .back-btn:hover { background: #00e676; color: #000; }
+    .game-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px 16px;
+      gap: 14px;
+      width: 100%;
+    }
+    .score-bar {
+      display: flex;
+      gap: 20px;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 12px 28px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .score-item { text-align: center; }
+    .score-item .val { font-family: 'Orbitron', monospace; font-size: 22px; font-weight: 700; color: #00e676; }
+    .score-item .lbl { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+    canvas {
+      border: 2px solid rgba(0,230,118,0.4);
+      border-radius: 12px;
+      background: rgba(0,0,0,0.4);
+      display: block;
+    }
+    .controls { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+    .ctrl-row { display: flex; gap: 8px; }
+    .ctrl-btn {
+      width: 54px; height: 54px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #fff; font-size: 20px;
+      border-radius: 10px; cursor: pointer;
+      transition: background 0.2s;
+    }
+    .ctrl-btn:hover, .ctrl-btn:active { background: #00e676; color: #000; }
+    .action-btns { display: flex; gap: 12px; }
+    .start-btn {
+      padding: 12px 32px;
+      background: #00e676; color: #000;
+      font-family: 'Orbitron', monospace;
+      font-size: 14px; font-weight: 700;
+      border: none; border-radius: 10px;
+      cursor: pointer; letter-spacing: 1px;
+      transition: opacity 0.3s;
+    }
+    .start-btn:hover { opacity: 0.85; }
+    .dash-btn {
+      padding: 12px 24px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #fff; font-size: 14px;
+      border-radius: 10px; cursor: pointer;
+      font-family: 'Rajdhani', sans-serif;
+      transition: all 0.3s;
+    }
+    .dash-btn:hover { background: rgba(255,255,255,0.2); }
+    .status-msg { font-size: 15px; color: #888; text-align: center; }
+    .overlay {
+      position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.8);
+      display: none; align-items: center; justify-content: center;
+      z-index: 999;
+    }
+    .overlay.show { display: flex; }
+    .overlay-box {
+      background: #12122a;
+      border: 2px solid #00e676;
+      border-radius: 20px;
+      padding: 40px; text-align: center;
+      min-width: 280px;
+    }
+    .overlay-box h2 { font-family: 'Orbitron', monospace; font-size: 24px; margin-bottom: 10px; }
+    .overlay-box .big { font-family: 'Orbitron', monospace; font-size: 48px; font-weight: 900; color: #00e676; margin: 16px 0; }
+    .overlay-box p { color: #888; margin-bottom: 20px; font-size: 14px; }
+    .overlay-box .player-name { color: #fff; font-size: 18px; font-weight: 600; margin-bottom: 10px; }
+    .btn-row { display: flex; gap: 12px; justify-content: center; }
+    .btn-o { padding: 12px 28px; background: #00e676; color: #000; border: none; border-radius: 8px; font-family: 'Orbitron', monospace; font-size: 13px; font-weight: 700; cursor: pointer; }
+    .btn-s { padding: 12px 20px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; border-radius: 8px; cursor: pointer; font-family: 'Rajdhani', sans-serif; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div class="navbar">
+    <div class="logo">🐍 SNAKE</div>
+    <button class="back-btn" onclick="window.location.href='dashboard.html'">⬅ Dashboard</button>
+  </div>
+
+  <div class="game-wrapper">
+    <div class="score-bar">
+      <div class="score-item"><div class="val" id="currentScore">0</div><div class="lbl">Score</div></div>
+      <div class="score-item"><div class="val" id="highScoreDisplay">0</div><div class="lbl">Best</div></div>
+      <div class="score-item"><div class="val" id="levelDisplay">1</div><div class="lbl">Level</div></div>
+    </div>
+
+    <canvas id="gameCanvas" width="400" height="400"></canvas>
+    <div class="status-msg" id="statusMsg">▶ Press Start to Play!</div>
+
+    <div class="controls">
+      <div class="ctrl-row"><button class="ctrl-btn" onclick="changeDir('UP')">⬆</button></div>
+      <div class="ctrl-row">
+        <button class="ctrl-btn" onclick="changeDir('LEFT')">⬅</button>
+        <button class="ctrl-btn" onclick="changeDir('DOWN')">⬇</button>
+        <button class="ctrl-btn" onclick="changeDir('RIGHT')">➡</button>
+      </div>
+    </div>
+
+    <div class="action-btns">
+      <button class="start-btn" id="startBtn" onclick="startGame()">▶ START</button>
+      <button class="dash-btn" onclick="window.location.href='dashboard.html'">🏠 Dashboard</button>
+    </div>
+  </div>
+
+  <div class="overlay" id="gameOverOverlay">
+    <div class="overlay-box">
+      <h2>💀 GAME OVER</h2>
+      <div class="player-name" id="overlayPlayerName"></div>
+      <div class="big" id="overlayScore">0</div>
+      <p id="overlayMsg">Keep playing!</p>
+      <div class="btn-row">
+        <button class="btn-o" onclick="restartGame()">🔄 Again</button>
+        <button class="btn-s" onclick="window.location.href='dashboard.html'">🏠 Dashboard</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    if (localStorage.getItem('isLoggedIn') !== 'true') window.location.href = 'index.html';
+    var playerName = localStorage.getItem('userName') || 'Player';
+    var highScore  = parseInt(localStorage.getItem('snakeBest')) || 0;
+    document.getElementById('highScoreDisplay').innerText = highScore;
+    document.getElementById('overlayPlayerName').innerText = '👤 ' + playerName;
+
+    var canvas = document.getElementById('gameCanvas');
+    var ctx = canvas.getContext('2d');
+    var box = 20, cols = canvas.width/box, rows = canvas.height/box;
+    var snake, dir, nextDir, food, score, level, speed, gameLoop, running;
+
+    function initGame() {
+      snake = [{x:10,y:10}]; dir='RIGHT'; nextDir='RIGHT';
+      score=0; level=1; speed=150; running=false;
+      placeFood(); updateScoreUI(); drawGame();
+    }
+
+    function placeFood() {
+      food = {x:Math.floor(Math.random()*cols), y:Math.floor(Math.random()*rows)};
+      for(var i=0;i<snake.length;i++) if(snake[i].x===food.x&&snake[i].y===food.y){placeFood();return;}
+    }
+
+    function drawGame() {
+      ctx.fillStyle='rgba(0,0,0,0.4)'; ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.strokeStyle='rgba(255,255,255,0.03)';
+      for(var i=0;i<cols;i++){ctx.beginPath();ctx.moveTo(i*box,0);ctx.lineTo(i*box,canvas.height);ctx.stroke();}
+      for(var j=0;j<rows;j++){ctx.beginPath();ctx.moveTo(0,j*box);ctx.lineTo(canvas.width,j*box);ctx.stroke();}
+      ctx.fillStyle='#ff4757'; ctx.beginPath();
+      ctx.arc(food.x*box+box/2,food.y*box+box/2,box/2-2,0,Math.PI*2); ctx.fill();
+      for(var k=0;k<snake.length;k++){
+        ctx.fillStyle=k===0?'#00e676':'#00b050';
+        ctx.fillRect(snake[k].x*box+1,snake[k].y*box+1,box-2,box-2);
+      }
+    }
+
+    function gameStep() {
+      dir=nextDir;
+      var head={x:snake[0].x,y:snake[0].y};
+      if(dir==='UP')head.y--; if(dir==='DOWN')head.y++;
+      if(dir==='LEFT')head.x--; if(dir==='RIGHT')head.x++;
+      if(head.x<0||head.x>=cols||head.y<0||head.y>=rows){endGame();return;}
+      for(var i=0;i<snake.length;i++) if(snake[i].x===head.x&&snake[i].y===head.y){endGame();return;}
+      snake.unshift(head);
+      if(head.x===food.x&&head.y===food.y){
+        score+=10;
+        if(score%50===0){level++;speed=Math.max(60,speed-15);clearInterval(gameLoop);gameLoop=setInterval(gameStep,speed);}
+        placeFood(); updateScoreUI();
+      } else { snake.pop(); }
+      drawGame();
+    }
+
+    function updateScoreUI() {
+      document.getElementById('currentScore').innerText=score;
+      document.getElementById('highScoreDisplay').innerText=Math.max(score,highScore);
+      document.getElementById('levelDisplay').innerText=level;
+    }
+
+    function startGame() {
+      if(running) return;
+      running=true;
+      document.getElementById('startBtn').innerText='🎮 Playing...';
+      document.getElementById('statusMsg').innerText='🐍 Arrow Keys ya Buttons use karo!';
+      gameLoop=setInterval(gameStep,speed);
+    }
+
+    function restartGame() {
+      clearInterval(gameLoop);
+      document.getElementById('gameOverOverlay').classList.remove('show');
+      document.getElementById('startBtn').innerText='▶ START';
+      document.getElementById('statusMsg').innerText='▶ Press Start to Play!';
+      initGame();
+    }
+
+    function endGame() {
+      clearInterval(gameLoop); running=false;
+      if(score>highScore){highScore=score;localStorage.setItem('snakeBest',highScore);localStorage.setItem('highScore',highScore);}
+      localStorage.setItem('lastScore',score);
+      var played=parseInt(localStorage.getItem('gamesPlayed'))||0;
+      localStorage.setItem('gamesPlayed',played+1);
+      document.getElementById('overlayScore').innerText=score;
+      document.getElementById('overlayMsg').innerText=score>=highScore&&score>0?'🏆 New High Score! Zabardast '+playerName+'!':'Koi baat nahi '+playerName+', agli baar aur achha!';
+      document.getElementById('gameOverOverlay').classList.add('show');
+    }
+
+    function changeDir(d) {
+      if(d==='UP'&&dir!=='DOWN')nextDir='UP';
+      if(d==='DOWN'&&dir!=='UP')nextDir='DOWN';
+      if(d==='LEFT'&&dir!=='RIGHT')nextDir='LEFT';
+      if(d==='RIGHT'&&dir!=='LEFT')nextDir='RIGHT';
+    }
+
+    document.addEventListener('keydown',function(e){
+      if(e.key==='ArrowUp')changeDir('UP');
+      if(e.key==='ArrowDown')changeDir('DOWN');
+      if(e.key==='ArrowLeft')changeDir('LEFT');
+      if(e.key==='ArrowRight')changeDir('RIGHT');
+      if(e.key===' '&&!running)startGame();
+    });
+
+    initGame();
+  </script>
+</body>
+</html>

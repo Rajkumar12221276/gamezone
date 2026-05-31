@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Memory Game</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'Rajdhani',sans-serif;background:linear-gradient(135deg,#0d0d1a,#12122a,#1a1a3e);min-height:100vh;color:#fff;display:flex;flex-direction:column;align-items:center;}
+    .navbar{width:100%;display:flex;justify-content:space-between;align-items:center;padding:14px 24px;background:rgba(13,13,26,0.9);border-bottom:1px solid rgba(255,255,255,0.08);}
+    .logo{font-family:'Orbitron',monospace;font-size:18px;font-weight:900;color:#e91e63;}
+    .back-btn{padding:7px 16px;background:transparent;border:1px solid #e91e63;color:#e91e63;border-radius:6px;cursor:pointer;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:600;transition:all 0.3s;}
+    .back-btn:hover{background:#e91e63;color:#fff;}
+    .game-wrap{width:100%;max-width:500px;padding:24px 16px;display:flex;flex-direction:column;align-items:center;}
+    .score-bar{display:flex;gap:16px;margin-bottom:20px;flex-wrap:wrap;justify-content:center;}
+    .score-item{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:10px 20px;text-align:center;}
+    .score-item .val{font-family:'Orbitron',monospace;font-size:20px;font-weight:700;color:#e91e63;}
+    .score-item .lbl{font-size:11px;color:#888;text-transform:uppercase;letter-spacing:1px;}
+    .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;width:100%;max-width:380px;margin-bottom:20px;}
+    .card{aspect-ratio:1;border-radius:10px;cursor:pointer;position:relative;transform-style:preserve-3d;transition:transform 0.4s;}
+    .card.flipped{transform:rotateY(180deg);}
+    .card.matched{transform:rotateY(180deg);opacity:0.7;}
+    .card-front,.card-back{position:absolute;width:100%;height:100%;border-radius:10px;display:flex;align-items:center;justify-content:center;backface-visibility:hidden;}
+    .card-back{background:rgba(233,30,99,0.2);border:2px solid rgba(233,30,99,0.4);font-size:28px;}
+    .card-front{background:rgba(255,255,255,0.07);border:2px solid rgba(255,255,255,0.15);font-size:10px;color:#555;transform:rotateY(180deg);}
+    .card-front .emoji{font-size:28px;}
+    .start-btn{padding:12px 32px;background:#e91e63;color:#fff;border:none;border-radius:10px;font-family:'Orbitron',monospace;font-size:15px;font-weight:700;cursor:pointer;transition:opacity 0.3s;letter-spacing:1px;}
+    .start-btn:hover{opacity:0.85;}
+    .status{font-size:16px;color:#888;margin-bottom:16px;text-align:center;}
+    .overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);display:none;align-items:center;justify-content:center;z-index:999;}
+    .overlay.show{display:flex;}
+    .overlay-box{background:#12122a;border:2px solid #e91e63;border-radius:20px;padding:40px;text-align:center;min-width:280px;}
+    .overlay-box h2{font-family:'Orbitron',monospace;font-size:22px;margin-bottom:10px;color:#e91e63;}
+    .overlay-box .big{font-family:'Orbitron',monospace;font-size:42px;font-weight:900;color:#e91e63;margin:12px 0;}
+    .overlay-box p{color:#888;margin-bottom:20px;font-size:14px;}
+    .btn-row{display:flex;gap:12px;justify-content:center;}
+    .btn-o{padding:12px 28px;background:#e91e63;color:#fff;border:none;border-radius:8px;font-family:'Orbitron',monospace;font-size:13px;font-weight:700;cursor:pointer;}
+    .btn-s{padding:12px 20px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;border-radius:8px;font-family:'Rajdhani',sans-serif;font-size:14px;cursor:pointer;}
+  </style>
+</head>
+<body>
+  <div class="navbar">
+    <div class="logo">🧩 MEMORY</div>
+    <button class="back-btn" onclick="window.location.href='dashboard.html'">⬅ Dashboard</button>
+  </div>
+  <div class="game-wrap">
+    <div class="score-bar">
+      <div class="score-item"><div class="val" id="movesVal">0</div><div class="lbl">Moves</div></div>
+      <div class="score-item"><div class="val" id="matchVal">0/8</div><div class="lbl">Matched</div></div>
+      <div class="score-item"><div class="val" id="bestVal">-</div><div class="lbl">Best Moves</div></div>
+      <div class="score-item"><div class="val" id="timeVal">0s</div><div class="lbl">Time</div></div>
+    </div>
+    <div class="status" id="statusMsg">▶ Start karo aur pairs dhundho!</div>
+    <div class="grid" id="grid"></div>
+    <button class="start-btn" id="startBtn" onclick="startGame()">▶ START GAME</button>
+  </div>
+
+  <div class="overlay" id="overlay">
+    <div class="overlay-box">
+      <h2>🧩 COMPLETED!</h2>
+      <div class="big" id="finalMoves">0</div>
+      <p id="finalMsg">moves mein complete kiya!</p>
+      <div class="btn-row">
+        <button class="btn-o" onclick="startGame();document.getElementById('overlay').classList.remove('show');">🔄 Again</button>
+        <button class="btn-s" onclick="window.location.href='dashboard.html'">🏠 Dashboard</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    if(localStorage.getItem('isLoggedIn')!=='true') window.location.href='index.html';
+    var best = localStorage.getItem('memoryBest') || '-';
+    document.getElementById('bestVal').innerText = best;
+
+    var emojis = ['🎮','🏆','🎯','🎲','🎪','🎨','🎭','🎬'];
+    var cards=[], flipped=[], matched=0, moves=0, canFlip=true, timer=null, seconds=0;
+
+    function startGame(){
+      document.getElementById('startBtn').style.display='none';
+      matched=0; moves=0; seconds=0; flipped=[]; canFlip=true;
+      document.getElementById('movesVal').innerText='0';
+      document.getElementById('matchVal').innerText='0/8';
+      document.getElementById('timeVal').innerText='0s';
+      document.getElementById('statusMsg').innerText='Cards flip karo — pairs dhundho!';
+      clearInterval(timer);
+      timer=setInterval(function(){ seconds++; document.getElementById('timeVal').innerText=seconds+'s'; },1000);
+      var deck=[...emojis,...emojis].sort(()=>Math.random()-0.5);
+      var grid=document.getElementById('grid');
+      grid.innerHTML='';
+      cards=[];
+      deck.forEach(function(e,i){
+        var card=document.createElement('div');
+        card.className='card';
+        card.innerHTML='<div class="card-back">🎴</div><div class="card-front"><div class="emoji">'+e+'</div></div>';
+        card.dataset.emoji=e;
+        card.dataset.index=i;
+        card.addEventListener('click',function(){ flipCard(this); });
+        grid.appendChild(card);
+        cards.push(card);
+      });
+    }
+
+    function flipCard(card){
+      if(!canFlip || card.classList.contains('flipped') || card.classList.contains('matched')) return;
+      card.classList.add('flipped');
+      flipped.push(card);
+      if(flipped.length===2){
+        moves++;
+        document.getElementById('movesVal').innerText=moves;
+        canFlip=false;
+        setTimeout(checkMatch,700);
+      }
+    }
+
+    function checkMatch(){
+      if(flipped[0].dataset.emoji===flipped[1].dataset.emoji){
+        flipped.forEach(c=>c.classList.add('matched'));
+        matched++;
+        document.getElementById('matchVal').innerText=matched+'/8';
+        if(matched===8){ endGame(); }
+      } else {
+        flipped.forEach(c=>c.classList.remove('flipped'));
+      }
+      flipped=[];
+      canFlip=true;
+    }
+
+    function endGame(){
+      clearInterval(timer);
+      var prev=localStorage.getItem('memoryBest');
+      if(!prev || moves<parseInt(prev)){
+        localStorage.setItem('memoryBest', moves);
+        document.getElementById('bestVal').innerText=moves;
+      }
+      var played=parseInt(localStorage.getItem('gamesPlayed'))||0;
+      localStorage.setItem('gamesPlayed',played+1);
+      document.getElementById('finalMoves').innerText=moves;
+      document.getElementById('finalMsg').innerText=moves+' moves aur '+seconds+'s mein complete kiya!';
+      document.getElementById('overlay').classList.add('show');
+    }
+  </script>
+</body>
+</html>
